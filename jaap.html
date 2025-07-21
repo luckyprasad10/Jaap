@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jaap Counter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🕉️ Jaap Counter</title>
   <style>
     :root {
       --bg: #ffffff;
@@ -12,7 +12,7 @@
       --accent: #4caf50;
     }
 
-    body.dark {
+    [data-theme='dark'] {
       --bg: #121212;
       --text: #ffffff;
       --button: #1f1f1f;
@@ -34,6 +34,17 @@
       transition: background-color 0.3s ease, color 0.3s ease;
     }
 
+    .theme-toggle {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+
     h1 {
       margin-bottom: 10px;
     }
@@ -43,9 +54,15 @@
       margin: 20px 0;
     }
 
-    .tap-btn {
+    .button-container {
+      position: relative;
       width: 180px;
       height: 180px;
+    }
+
+    .tap-btn {
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       font-size: 1.4rem;
       font-weight: bold;
@@ -53,24 +70,61 @@
       color: white;
       border: none;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      margin: 20px auto;
       cursor: pointer;
       transition: transform 0.2s ease, background-color 0.3s ease;
+      position: relative; /* Position relative for the progress circle */
+      z-index: 1; /* Ensure the button is above the progress circle */
     }
 
     .tap-btn:active {
       transform: scale(0.96);
     }
 
+    .tap-btn:hover {
+      background-color: darkgreen; /* Darker shade for hover effect */
+    }
+
+    .circular-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      z-index: 0; /* Behind the button */
+    }
+
+    .circular-progress svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+
+    .circular-progress circle {
+      fill: none;
+      stroke-width: 10;
+    }
+
+    .circular-progress .background {
+      stroke: #e6e6e6;
+    }
+
+    .circular-progress .progress {
+      stroke: var(--accent);
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
     .btn {
-      padding: 10px 20px;
+      padding: 12px 25px;
       margin: 10px;
       font-size: 1rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       background-color: var(--button);
       color: var(--text);
+      transition: background-color 0.3s ease;
     }
 
     .btn:hover {
@@ -83,6 +137,7 @@
       font-size: 1rem;
       border-radius: 8px;
       border: 1px solid #aaa;
+      width: 180px;
       text-align: center;
     }
 
@@ -92,11 +147,12 @@
       color: gray;
     }
 
-    #mantraText {
-      margin: 20px 0;
-      font-size: 1.5rem;
+    #animatedMantra {
+      margin-top: 15px;
+      font-size: 1.2rem;
       font-weight: bold;
       animation: pulse 2s infinite;
+      color: var(--accent);
     }
 
     @keyframes pulse {
@@ -105,61 +161,52 @@
       100% { opacity: 0.3; }
     }
 
-    #themeToggle {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 1.5rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text);
-    }
-
-    #progressCircle {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 8px solid var(--button);
-      border-top-color: var(--accent);
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    iframe {
-      margin-top: 20px;
+    #player {
+      margin-top: 10px;
+      display: block; /* Ensure the player is displayed */
+      width: 320px; /* Smaller width for the video player */
+      height: 180px; /* Smaller height for the video player */
     }
   </style>
 </head>
 <body>
-  <button id="themeToggle" onclick="toggleTheme()">🌙</button>
+
+  <button class="theme-toggle" onclick="toggleTheme()">🌞</button>
 
   <h1>🕉️ Jaap Counter</h1>
   <div id="counterDisplay">0 / 108</div>
-  <button class="tap-btn" onclick="incrementCounter()">Tap (Jaap)</button>
-
-  <div>
-    <input type="number" id="targetInput" placeholder="Set Target" onchange="setTarget()" />
-    <button class="btn" onclick="resetCounter()">Reset</button>
+  
+  <!-- Button with Circular Progress -->
+  <div class="button-container">
+    <div class="circular-progress">
+      <svg>
+        <circle class="background" cx="90" cy="90" r="70"></circle>
+        <circle class="progress" cx="90" cy="90" r="70"></circle>
+      </svg>
+    </div>
+    <button class="tap-btn" onclick="incrementCounter()">Tap (Jaap)</button>
   </div>
 
+  <br/>
+  
+  <input type="number" id="targetInput" placeholder="Set Target" onchange="setTarget()"/>
+  <button class="btn" onclick="resetCounter()">Reset</button>
   <div id="timer">Time: 00:00</div>
-  <div id="mantraText">ॐ नमः शिवाय</div>
-  <div id="progressCircle" style="visibility: hidden;"></div>
 
-  <div>
-    <input type="text" id="youtubeLink" placeholder="Paste YouTube Link" style="width: 300px;" />
-    <button class="btn" onclick="loadVideo()">Load</button>
-    <button class="btn" onclick="togglePlayPause()">Play/Pause</button>
-    <input type="range" min="0" max="100" value="50" id="volumeControl" onchange="setVolume()" />
+  <div id="animatedMantra">ॐ नमः शिवाय</div>
+  
+  <input type="text" id="videoUrlInput" placeholder="Paste YouTube Mantra URL"/>
+  <button class="btn" onclick="loadVideo()">Play Mantra</button>
+
+  <div id="player"></div>
+
+  <div class="controls">
+    <button class="btn" onclick="togglePlayPause()">⏯️ Play/Pause</button>
+    <label>
+      🔊 Volume:
+      <input type="range" min="0" max="100" value="100" onchange="setVolume(this.value)">
+    </label>
   </div>
-
-  <div id="videoContainer"></div>
 
   <script>
     let count = 0;
@@ -167,26 +214,40 @@
     let startTime = null;
     let timerInterval = null;
     let player;
+    let isPlaying = false;
 
     const display = document.getElementById('counterDisplay');
     const timer = document.getElementById('timer');
-    const progressCircle = document.getElementById('progressCircle');
+    const progressCircle = document.querySelector('.progress');
+    const radius = 70; // Radius of the circle
+    const circumference = 2 * Math.PI * radius; // Circumference of the circle
 
-    function updateDisplay() {
-      display.textContent = `${count} / ${target}`;
-      if (count > 0) progressCircle.style.visibility = 'visible';
-    }
+    // Set the stroke dasharray and dashoffset for the progress circle
+    progressCircle.style.strokeDasharray = circumference;
+    progressCircle.style.strokeDashoffset = circumference;
 
     function incrementCounter() {
+      console.log(`Current count: ${count}, Target: ${target}`);
       if (count === 0) startTimer();
+
       if (count < target) {
         count++;
         updateDisplay();
+        updateProgress();
         if (count === target) {
           stopTimer();
           alert(`🎉 Jaap Complete in ${timer.textContent.split(': ')[1]}!`);
         }
       }
+    }
+
+    function updateDisplay() {
+      display.textContent = `${count} / ${target}`;
+    }
+
+    function updateProgress() {
+      const offset = circumference - (count / target) * circumference;
+      progressCircle.style.strokeDashoffset = offset;
     }
 
     function setTarget() {
@@ -195,12 +256,14 @@
       count = 0;
       resetTimer();
       updateDisplay();
+      updateProgress(); // Update progress when target is set
     }
 
     function resetCounter() {
       count = 0;
       updateDisplay();
       resetTimer();
+      updateProgress(); // Reset progress
     }
 
     function startTimer() {
@@ -222,57 +285,77 @@
       stopTimer();
       timer.textContent = 'Time: 00:00';
       startTime = null;
-      progressCircle.style.visibility = 'hidden';
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle('dark');
-      const toggleBtn = document.getElementById('themeToggle');
-      toggleBtn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
-    }
-
+    // YouTube Player API
     function loadVideo() {
-      const link = document.getElementById('youtubeLink').value;
-      const videoId = extractVideoID(link);
-      if (videoId) {
-        document.getElementById('videoContainer').innerHTML = `
-          <iframe id="ytplayer" width="300" height="200"
-            src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1"
-            frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
-        setTimeout(() => {
-          player = new YT.Player('ytplayer');
-        }, 1000);
+      const videoUrl = document.getElementById('videoUrlInput').value;
+      const videoId = extractVideoIdFromUrl(videoUrl);
+
+      if (player) {
+        player.loadVideoById(videoId);
+      } else {
+        player = new YT.Player('player', {
+          height: '180', // Smaller height for the video player
+          width: '320',  // Smaller width for the video player
+          videoId: videoId,
+          events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+          }
+        });
       }
     }
 
-    function extractVideoID(url) {
-      const regex = /[?&]v=([^&#]*)|youtu\.be\/([^&#]*)/;
-      const match = url.match(regex);
-      return match ? (match[1] || match[2]) : null;
+    function extractVideoIdFromUrl(url) {
+      const match = url.match(/(?:youtu\.be\/|v=|embed\/|watch\?v=)([^&]+)/);
+      return match ? match[1] : '';
+    }
+
+    function onPlayerReady(event) {
+      event.target.setVolume(100);
+      event.target.playVideo();
+      isPlaying = true;
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === 1) { // playing
+        isPlaying = true;
+      } else if (event.data === 2) { // paused
+        isPlaying = false;
+      } else if (event.data === 0) { // ended
+        isPlaying = false;
+      }
     }
 
     function togglePlayPause() {
-      if (player && player.getPlayerState) {
-        const state = player.getPlayerState();
-        if (state === 1) player.pauseVideo();
-        else player.playVideo();
+      if (player) {
+        if (isPlaying) {
+          player.pauseVideo();
+        } else {
+          player.playVideo();
+        }
       }
     }
 
-    function setVolume() {
-      const volume = document.getElementById('volumeControl').value;
-      if (player && player.setVolume) player.setVolume(volume);
+    function setVolume(vol) {
+      if (player) {
+        player.setVolume(vol);
+      }
     }
 
-    function onYouTubeIframeAPIReady() {
-      // Called automatically by YT API
+    // Theme toggle
+    let dark = false;
+    function toggleTheme() {
+      dark = !dark;
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      document.querySelector('.theme-toggle').textContent = dark ? '🌙' : '🌞';
     }
 
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.body.appendChild(tag);
-
+    // Initial Display
     updateDisplay();
+    updateProgress(); // Initialize progress
   </script>
+  <script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
