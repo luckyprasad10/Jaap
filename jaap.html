@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jaap Counter</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --button: #f0f0f0;
+      --accent: #4caf50;
+    }
+
+    body.dark {
+      --bg: #121212;
+      --text: #ffffff;
+      --button: #1f1f1f;
+      --accent: #81c784;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #counterDisplay {
+      font-size: 2.5rem;
+      margin: 20px 0;
+    }
+
+    .tap-btn {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      font-size: 1.4rem;
+      font-weight: bold;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      margin: 20px auto;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.3s ease;
+    }
+
+    .tap-btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: var(--button);
+      color: var(--text);
+    }
+
+    .btn:hover {
+      background-color: var(--accent);
+      color: #fff;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #aaa;
+      text-align: center;
+    }
+
+    #timer {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: gray;
+    }
+
+    #mantraText {
+      margin: 20px 0;
+      font-size: 1.5rem;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+
+    #themeToggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    #progressCircle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 8px solid var(--button);
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    iframe {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <button id="themeToggle" onclick="toggleTheme()">🌙</button>
+
+  <h1>🕉️ Jaap Counter</h1>
+  <div id="counterDisplay">0 / 108</div>
+  <button class="tap-btn" onclick="incrementCounter()">Tap (Jaap)</button>
+
+  <div>
+    <input type="number" id="targetInput" placeholder="Set Target" onchange="setTarget()" />
+    <button class="btn" onclick="resetCounter()">Reset</button>
+  </div>
+
+  <div id="timer">Time: 00:00</div>
+  <div id="mantraText">ॐ नमः शिवाय</div>
+  <div id="progressCircle" style="visibility: hidden;"></div>
+
+  <div>
+    <input type="text" id="youtubeLink" placeholder="Paste YouTube Link" style="width: 300px;" />
+    <button class="btn" onclick="loadVideo()">Load</button>
+    <button class="btn" onclick="togglePlayPause()">Play/Pause</button>
+    <input type="range" min="0" max="100" value="50" id="volumeControl" onchange="setVolume()" />
+  </div>
+
+  <div id="videoContainer"></div>
+
+  <script>
+    let count = 0;
+    let target = 108;
+    let startTime = null;
+    let timerInterval = null;
+    let player;
+
+    const display = document.getElementById('counterDisplay');
+    const timer = document.getElementById('timer');
+    const progressCircle = document.getElementById('progressCircle');
+
+    function updateDisplay() {
+      display.textContent = `${count} / ${target}`;
+      if (count > 0) progressCircle.style.visibility = 'visible';
+    }
+
+    function incrementCounter() {
+      if (count === 0) startTimer();
+      if (count < target) {
+        count++;
+        updateDisplay();
+        if (count === target) {
+          stopTimer();
+          alert(`🎉 Jaap Complete in ${timer.textContent.split(': ')[1]}!`);
+        }
+      }
+    }
+
+    function setTarget() {
+      const input = document.getElementById('targetInput').value;
+      target = input > 0 ? parseInt(input) : 108;
+      count = 0;
+      resetTimer();
+      updateDisplay();
+    }
+
+    function resetCounter() {
+      count = 0;
+      updateDisplay();
+      resetTimer();
+    }
+
+    function startTimer() {
+      startTime = new Date();
+      timerInterval = setInterval(() => {
+        const now = new Date();
+        const diff = Math.floor((now - startTime) / 1000);
+        const mins = String(Math.floor(diff / 60)).padStart(2, '0');
+        const secs = String(diff % 60).padStart(2, '0');
+        timer.textContent = `Time: ${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function resetTimer() {
+      stopTimer();
+      timer.textContent = 'Time: 00:00';
+      startTime = null;
+      progressCircle.style.visibility = 'hidden';
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      const toggleBtn = document.getElementById('themeToggle');
+      toggleBtn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    }
+
+    function loadVideo() {
+      const link = document.getElementById('youtubeLink').value;
+      const videoId = extractVideoID(link);
+      if (videoId) {
+        document.getElementById('videoContainer').innerHTML = `
+          <iframe id="ytplayer" width="300" height="200"
+            src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1"
+            frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
+        setTimeout(() => {
+          player = new YT.Player('ytplayer');
+        }, 1000);
+      }
+    }
+
+    function extractVideoID(url) {
+      const regex = /[?&]v=([^&#]*)|youtu\.be\/([^&#]*)/;
+      const match = url.match(regex);
+      return match ? (match[1] || match[2]) : null;
+    }
+
+    function togglePlayPause() {
+      if (player && player.getPlayerState) {
+        const state = player.getPlayerState();
+        if (state === 1) player.pauseVideo();
+        else player.playVideo();
+      }
+    }
+
+    function setVolume() {
+      const volume = document.getElementById('volumeControl').value;
+      if (player && player.setVolume) player.setVolume(volume);
+    }
+
+    function onYouTubeIframeAPIReady() {
+      // Called automatically by YT API
+    }
+
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+
+    updateDisplay();
+  </script>
+</body>
+</html>
